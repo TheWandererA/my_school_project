@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="am">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>መውዳ ትምህርት ቤት - የወደፊት መማሪያ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --cyber-cyan: #00f2ff;
+        --cyber-magenta: #ff00ff;
+        --cyber-bg: #050510;
+      }
+      body {
+        font-family: "Noto Sans Ethiopic", sans-serif;
+        background-color: var(--cyber-bg);
+        color: #e2e8f0;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+      }
+      .cyber-grid {
+        background-image: linear-gradient(
+            rgba(0, 242, 255, 0.05) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, rgba(0, 242, 255, 0.05) 1px, transparent 1px);
+        background-size: 30px 30px;
+      }
+      .hologram-card {
+        background: rgba(10, 20, 40, 0.6);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(0, 242, 255, 0.2);
+        box-shadow: 0 0 20px rgba(0, 242, 255, 0.05);
+      }
+      .neon-text-cyan {
+        text-shadow: 0 0 10px rgba(0, 242, 255, 0.8);
+        color: var(--cyber-cyan);
+      }
+      .neon-text-magenta {
+        text-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
+        color: var(--cyber-magenta);
+      }
+
+      .scan-line {
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--cyber-cyan),
+          transparent
+        );
+        width: 100%;
+        position: absolute;
+        animation: scan 4s infinite linear;
+        z-index: 10;
+      }
+      @keyframes scan {
+        0% {
+          transform: translateY(-100%);
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+      }
+      .rotate-ui {
+        animation: rotate-slow 30s infinite linear;
+      }
+      @keyframes rotate-slow {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .glow-button {
+        transition: all 0.3s;
+        border: 1px solid rgba(0, 242, 255, 0.3);
+      }
+      .glow-button:hover {
+        background: var(--cyber-cyan);
+        color: #000;
+        box-shadow: 0 0 30px var(--cyber-cyan);
+      }
+      .glow-button-magenta {
+        border: 1px solid rgba(255, 0, 255, 0.3);
+      }
+      .glow-button-magenta:hover {
+        background: var(--cyber-magenta);
+        color: #fff;
+        box-shadow: 0 0 30px var(--cyber-magenta);
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+      .animate-float {
+        animation: float 4s infinite ease-in-out;
+      }
+    </style>
+  </head>
+  <body class="cyber-grid min-h-screen">
+    <div id="root"></div>
+
+    <script type="module">
+      import React, { useState, useEffect } from "https://esm.sh/react@19.2.3";
+      import ReactDOM from "https://esm.sh/react-dom@19.2.3/client";
+      import {
+        Home,
+        Cpu,
+        CheckSquare,
+        ArrowLeft,
+        Sparkles,
+        Activity,
+        Shield,
+        Play,
+        Terminal,
+        Zap,
+        Globe,
+        Clock,
+        Brain,
+        BookOpen,
+      } from "https://esm.sh/lucide-react@0.475.0";
+
+      // --- ውሂብ: የምግብ ስርዓተ-እንሽርሽሪት (Digestive System) ---
+      const ORGANS = {
+        mouth: {
+          name: "አፍ",
+          english: "Mouth Unit",
+          color: "#00f2ff",
+          icon: "👄",
+          description:
+            "የምግብ መፈጨት ሂደት የሚጀምረው በአፍ ውስጥ ነው። ጥርሶቻችን ምግብን ያደቃሉ፤ ምራቅ ደግሞ ምግብን ያለሰልሳል።",
+          facts: [
+            "ባዮ-ሜካኒካል ማድቀቅ ሂደት እዚህ ይጀምራል",
+            "ምራቅ ኢንዛይሞችን በመጠቀም ኬሚካላዊ ትንተና ይጀምራል",
+            "ምላሳችን የጣዕም ሴንሰሮችን በመጠቀም መረጃ ይሰበስባል",
+          ],
+        },
+        esophagus: {
+          name: "የምግብ ቧንቧ",
+          english: "Esophagus Conduit",
+          color: "#f59e0b",
+          icon: "🦒",
+          description:
+            "ምግብን ከአፍ ወደ ጨጓራ የሚወስድ አስተላላፊ ቧንቧ ነው። በጡንቻዎች ግፊት ምግብን ያስተላልፋል።",
+          facts: [
+            "ርዝመቱ 25 ሴንቲሜትር የሆነ ባዮ-ቧንቧ ነው",
+            "መረጃ (ምግብ) ለማስተላለፍ 7 ሰከንድ ብቻ ይፈጃል",
+            "በፔሪስታልሲስ (Peristalsis) ግፊት ወደ ታች ይገፋል",
+          ],
+        },
+        stomach: {
+          name: "ጨጓራ",
+          english: "Stomach Reactor",
+          color: "#10b981",
+          icon: "🥣",
+          description:
+            "ምግብ የሚከማችበትና የሚፈጭበት ኃይለኛ ሪአክተር ነው። በጠንካራ አሲድ አማካኝነት ምግብን ወደ ፈሳሽነት ይቀይራል።",
+          facts: [
+            "ጠንካራ ሃይድሮክሎሪክ አሲድ ለኬሚካላዊ መፈጨት ይጠቀማል",
+            "ሂደቱ ከ2 እስከ 4 ሰዓታት የሚወስድ ከፍተኛ ስራ ነው",
+            "የምግብ ፕሮቲኖችን ለመበተን ኢንዛይሞችን ይጠቀማል",
+          ],
+        },
+        liver: {
+          name: "ጉበት",
+          english: "Liver Processing Unit",
+          color: "#8b5cf6",
+          icon: "🧪",
+          description:
+            "ጉበት የሰውነታችን ዋና የማጣሪያ ማዕከል ነው። ሐሞት በማምረት ስብን ለመፍጨትና መርዛማ ነገሮችን ለማስወገድ ይረዳል።",
+          facts: [
+            "ከ500 በላይ የኬሚካል ሂደቶችን በአንድ ጊዜ ያከናውናል",
+            "የደም ንጽሕናን የሚጠብቅ ባዮ-ፊልተር ነው",
+            "ሐሞት (Bile) የተባለ ኃይለኛ ፈሳሽ ያመነጫል",
+          ],
+        },
+        small_intestine: {
+          name: "ትንሹ አንጀት",
+          english: "Core Nutrient Extractor",
+          color: "#ec4899",
+          icon: "➰",
+          description:
+            "ምግብ ተፈጭቶ ካለቀ በኋላ ንጥረ ነገሮች ወደ ደም የሚገቡበት ዋናው ቦታ ነው። በጣም ረጅም እና የተራቀቀ ክፍል ነው።",
+          facts: [
+            "ርዝመቱ 6 ሜትር የሚደርስ እጅግ ረጅም ክፍል ነው",
+            "90% የሚሆነው ንጥረ ነገር እዚህ ይወሰዳል",
+            "ቪሊ (Villi) የተባሉ ማይክሮ-ሴንሰሮችን ይጠቀማል",
+          ],
+        },
+        large_intestine: {
+          name: "ትልቁ አንጀት",
+          english: "Waste Recycling Center",
+          color: "#3b82f6",
+          icon: "🧻",
+          description:
+            "ውሃን ከመለየቱ በተጨማሪ አላስፈላጊ የምግብ ቅሪቶችን ወደ ቆሻሻነት የሚቀይር ማጠናቀቂያ ክፍል ነው።",
+          facts: [
+            "ውሃን ወደ ስርዓቱ በመመለስ ሚዛንን ይጠብቃል",
+            "ጠቃሚ ባክቴሪያዎችን እንደ ማይክሮ-ሰራተኞች ይጠቀማል",
+            "የቆሻሻ አወጋገድ ሂደትን ያመቻቻል",
+          ],
+        },
+      };
+
+      const BIO_QUIZ = [
+        {
+          q: "የምግብ መፈጨት ሂደት የሚጀምረው በየትኛው ክፍል ነው?",
+          options: ["ጨጓራ ሪአክተር", "አፍ ክፍል", "ትንሹ አንጀት", "የምግብ ቧንቧ"],
+          correct: 1,
+        },
+        {
+          q: "ሐሞትን (Bile) የሚያመነጨው ዋናው ማቀነባበሪያ የትኛው ነው?",
+          options: ["አፍ", "ጨጓራ", "ጉበት ክፍል", "ትልቁ አንጀት"],
+          correct: 2,
+        },
+        {
+          q: "ንጥረ ነገሮችን ወደ ደም ስርዓት የሚያስገባው ረጅሙ ክፍል የትኛው ነው?",
+          options: ["የምግብ ቧንቧ", "ትልቁ አንጀት", "ትንሹ አንጀት", "ጨጓራ"],
+          correct: 2,
+        },
+      ];
+
+      // --- ውሂብ: 12ቱ የእንግሊዝኛ ጊዜያት (The 12 Tenses) ---
+      const TENSES = {
+        present_simple: {
+          name: "Simple Present",
+          amharic: "ተራ የአሁኑ ጊዜ",
+          formula: "Subject + V1 (s/es)",
+          usage: "ሁልጊዜ ለሚደጋገሙ ድርጊቶች ወይም ለዕውነት ነገሮች እንጠቀማለን።",
+          example: "She eats bread every morning.",
+        },
+        present_continuous: {
+          name: "Present Continuous",
+          amharic: "ቀጣይ የአሁኑ ጊዜ",
+          formula: "Subject + am/is/are + V-ing",
+          usage: "አሁን እየተከናወነ ያለ ድርጊትን ለመግለጽ።",
+          example: "I am learning English now.",
+        },
+        present_perfect: {
+          name: "Present Perfect",
+          amharic: "የተጠናቀቀ የአሁኑ ጊዜ",
+          formula: "Subject + have/has + V3",
+          usage: "በቅርቡ የተከናወነ ወይም ውጤቱ አሁን የሚታይ ድርጊት።",
+          example: "I have finished my homework.",
+        },
+        present_perfect_continuous: {
+          name: "Present Perfect Continuous",
+          amharic: "ተጀምሮ የቀጠለ የአሁኑ ጊዜ",
+          formula: "Subject + have/has + been + V-ing",
+          usage: "ከቆይታ በፊት ተጀምሮ አሁንም እየቀጠለ ያለ ድርጊት።",
+          example: "She has been reading for two hours.",
+        },
+        past_simple: {
+          name: "Simple Past",
+          amharic: "ተራ ያለፈ ጊዜ",
+          formula: "Subject + V2",
+          usage: "ባለፈ ጊዜ ተከስቶ የተጠናቀቀ ድርጊት።",
+          example: "They watched a movie yesterday.",
+        },
+        past_continuous: {
+          name: "Past Continuous",
+          amharic: "ቀጣይ ያለፈ ጊዜ",
+          formula: "Subject + was/were + V-ing",
+          usage: "ባለፈ ጊዜ በተወሰነ ሰዓት እየተከናወነ የነበረ ድርጊት።",
+          example: "I was sleeping when you called.",
+        },
+        past_perfect: {
+          name: "Past Perfect",
+          amharic: "የተጠናቀቀ ያለፈ ጊዜ",
+          formula: "Subject + had + V3",
+          usage: "ከሌላ ያለፈ ድርጊት በፊት ቀድሞ የተከናወነ።",
+          example: "The train had left before I arrived.",
+        },
+        past_perfect_continuous: {
+          name: "Past Perfect Continuous",
+          amharic: "ተጀምሮ የቆየ ያለፈ ጊዜ",
+          formula: "Subject + had + been + V-ing",
+          usage: "ባለፈው ጊዜ ሌላ ድርጊት እስኪመጣ ድረስ ሲከናወን የነበረ።",
+          example: "He had been working for 5 years.",
+        },
+        future_simple: {
+          name: "Simple Future",
+          amharic: "ተራ የወደፊት ጊዜ",
+          formula: "Subject + will + V1",
+          usage: "ወደፊት የሚከናወን ድርጊትን ለመግለጽ።",
+          example: "I will go to school tomorrow.",
+        },
+        future_continuous: {
+          name: "Future Continuous",
+          amharic: "ቀጣይ የወደፊት ጊዜ",
+          formula: "Subject + will be + V-ing",
+          usage: "ወደፊት በተወሰነ ጊዜ እየተከናወነ የሚቆይ ድርጊት።",
+          example: "At 10 AM, I will be flying to London.",
+        },
+        future_perfect: {
+          name: "Future Perfect",
+          amharic: "የተጠናቀቀ የወደፊት ጊዜ",
+          formula: "Subject + will have + V3",
+          usage: "ወደፊት በተወሰነ ጊዜ ተጠናቆ የሚገኝ ድርጊት።",
+          example: "I will have finished my degree by 2026.",
+        },
+        future_perfect_continuous: {
+          name: "Future Perfect Continuous",
+          amharic: "ተከስቶ የሚቆይ የወደፊት ጊዜ",
+          formula: "Subject + will have been + V-ing",
+          usage: "ወደፊት በተወሰነ ጊዜ ድርጊቱ ለምን ያህል ጊዜ ሲከናወን እንደቆየ ለመግለጽ።",
+          example: "I will have been living here for 10 years.",
+        },
+      };
+
+      const TENSE_QUIZ = [
+        {
+          q: '"She ___ (go) to school every day." - ክፍት ቦታውን በትክክለኛው ጊዜ ይሙሉ',
+          options: ["going", "goes", "went", "will go"],
+          correct: 1,
+        },
+        {
+          q: '"I ___ my lunch now." - አሁን እየበላሁ መሆኑን ለመግለጽ የትኛው ትክክል ነው?',
+          options: ["eat", "have eaten", "am eating", "was eating"],
+          correct: 2,
+        },
+        {
+          q: "ካለፈ ድርጊት በፊት ቀድሞ የተከናወነን ነገር ለመግለጽ የትኛውን ጊዜ እንጠቀማለን?",
+          options: [
+            "Simple Past",
+            "Past Continuous",
+            "Past Perfect",
+            "Simple Present",
+          ],
+          correct: 2,
+        },
+        {
+          q: '"Tomorrow, I ___ to the market." - የወደፊት እቅድን ለመግለጽ የትኛው ትክክል ነው?',
+          options: ["go", "went", "will go", "have gone"],
+          correct: 2,
+        },
+      ];
+
+      // --- ዋናው አፕ (Main App) ---
+      const LearningApp = () => {
+        const [module, setModule] = useState("hub"); // hub, bio, tense
+        const [view, setView] = useState("home"); // home, detail, quiz, result
+        const [selectedId, setSelectedId] = useState(null);
+        const [quizIdx, setQuizIdx] = useState(0);
+        const [score, setScore] = useState(0);
+        const [ansStatus, setAnsStatus] = useState(null);
+
+        // Helpers
+        const resetView = (newView, newModule = module) => {
+          setView(newView);
+          setModule(newModule);
+          setQuizIdx(0);
+          setScore(0);
+          setAnsStatus(null);
+        };
+
+        const handleAnswer = (idx, currentQuizData) => {
+          if (ansStatus !== null) return;
+          setAnsStatus(idx);
+          if (idx === currentQuizData[quizIdx].correct) setScore(score + 1);
+          setTimeout(() => {
+            if (quizIdx < currentQuizData.length - 1) {
+              setQuizIdx(quizIdx + 1);
+              setAnsStatus(null);
+            } else setView("result");
+          }, 1000);
+        };
+
+        // --- Views ---
+
+        // 1. Futuristic Hub (Main Menu)
+        if (module === "hub") {
+          return React.createElement(
+            "div",
+            {
+              className:
+                "min-h-screen flex flex-col items-center justify-center p-6 text-center relative",
+            },
+            React.createElement(
+              "div",
+              { className: "mb-12 animate-float" },
+              React.createElement(
+                "div",
+                {
+                  className:
+                    "text-cyan-500 font-mono text-xs tracking-[0.5em] mb-4",
+                },
+                "TERMINAL INITIALIZED: SELECT MISSION"
+              ),
+              React.createElement(
+                "h1",
+                {
+                  className: "text-5xl md:text-7xl font-black text-white mb-6",
+                },
+                "መውዳ ትምህርት ቤት"
+              ),
+              React.createElement(
+                "p",
+                {
+                  className: "text-slate-400 max-w-lg mx-auto leading-relaxed",
+                },
+                "ሁለገብ የቴክኖሎጂ መማሪያ ስርዓት። የሚፈልጉትን የትምህርት ዘርፍ ይምረጡ።"
+              )
+            ),
+            React.createElement(
+              "div",
+              { className: "grid md:grid-cols-2 gap-8 w-full max-w-4xl" },
+              // Module Bio
+              React.createElement(
+                "button",
+                {
+                  onClick: () => resetView("home", "bio"),
+                  className:
+                    "hologram-card p-10 rounded-[3rem] border-cyan-500/30 group hover:border-cyan-400 transition-all hover:-translate-y-2",
+                },
+                React.createElement(
+                  "div",
+                  {
+                    className:
+                      "w-20 h-20 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-cyan-500 group-hover:text-black transition-all",
+                  },
+                  React.createElement(Activity, { size: 40 })
+                ),
+                React.createElement(
+                  "h2",
+                  { className: "text-2xl font-black text-white mb-2" },
+                  "የምግብ ስርዓተ-እንሽርሽሪት"
+                ),
+                React.createElement(
+                  "p",
+                  { className: "text-slate-400 text-sm" },
+                  "የሰውነታችንን ባዮሎጂካዊ ሂደቶች በዝርዝር ይማሩ።"
+                )
+              ),
+              // Module Tense
+              React.createElement(
+                "button",
+                {
+                  onClick: () => resetView("home", "tense"),
+                  className:
+                    "hologram-card p-10 rounded-[3rem] border-magenta-500/30 group hover:border-magenta-400 transition-all hover:-translate-y-2",
+                },
+                React.createElement(
+                  "div",
+                  {
+                    className:
+                      "w-20 h-20 bg-magenta-500/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-magenta-500 group-hover:text-white transition-all",
+                  },
+                  React.createElement(Clock, { size: 40 })
+                ),
+                React.createElement(
+                  "h2",
+                  { className: "text-2xl font-black text-white mb-2" },
+                  "የእንግሊዝኛ ጊዜያት (Tenses)"
+                ),
+                React.createElement(
+                  "p",
+                  { className: "text-slate-400 text-sm" },
+                  "12ቱን የእንግሊዝኛ ጊዜያት በቀላሉ ይረዱ።"
+                )
+              )
+            ),
+            // Developer Credit - BOLDED
+            React.createElement(
+              "div",
+              {
+                className:
+                  "mt-16 text-[10px] text-slate-600 font-mono font-bold tracking-[0.5em] uppercase",
+              },
+              "Developed by AK & Danoona"
+            )
+          );
+        }
+
+        // 2. Biological System Module Views
+        if (module === "bio") {
+          if (view === "home") {
+            return React.createElement(
+              "div",
+              { className: "min-h-screen p-6 max-w-7xl mx-auto" },
+              React.createElement(
+                "button",
+                {
+                  onClick: () => setModule("hub"),
+                  className:
+                    "mb-8 text-cyan-400 flex items-center gap-2 font-bold hover:underline",
+                },
+                React.createElement(ArrowLeft, { size: 18 }),
+                "ወደ ዋናው ማውጫ ተመለስ"
+              ),
+              React.createElement(
+                "div",
+                { className: "grid lg:grid-cols-12 gap-8" },
+                React.createElement(
+                  "div",
+                  {
+                    className:
+                      "lg:col-span-7 hologram-card rounded-[3rem] p-10 relative overflow-hidden",
+                  },
+                  React.createElement("div", { className: "scan-line" }),
+                  React.createElement(
+                    "svg",
+                    {
+                      viewBox: "0 0 400 600",
+                      className: "w-full h-auto opacity-90",
+                    },
+                    React.createElement("ellipse", {
+                      cx: 200,
+                      cy: 300,
+                      rx: 140,
+                      ry: 280,
+                      fill: "rgba(0, 242, 255, 0.05)",
+                      stroke: "rgba(0, 242, 255, 0.2)",
+                      strokeWidth: 2,
+                    }),
+                    Object.entries(ORGANS).map(([id, org]) => {
+                      if (id === "mouth")
+                        return React.createElement("circle", {
+                          key: id,
+                          cx: 200,
+                          cy: 60,
+                          r: 25,
+                          fill: org.color,
+                          className:
+                            "cursor-pointer hover:brightness-125 transition-all",
+                          onClick: () => {
+                            setSelectedId(id);
+                            setView("detail");
+                          },
+                        });
+                      if (id === "esophagus")
+                        return React.createElement("rect", {
+                          key: id,
+                          x: 195,
+                          y: 85,
+                          width: 10,
+                          height: 90,
+                          fill: org.color,
+                          className:
+                            "cursor-pointer hover:brightness-125 transition-all",
+                          onClick: () => {
+                            setSelectedId(id);
+                            setView("detail");
+                          },
+                        });
+                      if (id === "stomach")
+                        return React.createElement("ellipse", {
+                          key: id,
+                          cx: 180,
+                          cy: 210,
+                          rx: 50,
+                          ry: 40,
+                          fill: org.color,
+                          className:
+                            "cursor-pointer hover:brightness-125 transition-all",
+                          onClick: () => {
+                            setSelectedId(id);
+                            setView("detail");
+                          },
+                        });
+                      if (id === "liver")
+                        return React.createElement("path", {
+                          key: id,
+                          d: "M 120 180 Q 100 200 120 230 L 165 230 Q 175 220 165 180 Z",
+                          fill: org.color,
+                          className:
+                            "cursor-pointer hover:brightness-125 transition-all",
+                          onClick: () => {
+                            setSelectedId(id);
+                            setView("detail");
+                          },
+                        });
+                      if (id === "small_intestine")
+                        return React.createElement("path", {
+                          key: id,
+                          d: "M 175 250 Q 150 280 175 310 Q 200 340 175 370 Q 150 400 175 430",
+                          fill: "none",
+                          stroke: org.color,
+                          strokeWidth: 18,
+                          strokeLinecap: "round",
+                          className:
+                            "cursor-pointer hover:brightness-125 transition-all",
+                          onClick: () => {
+                            setSelectedId(id);
+                            setView("detail");
+                          },
+                        });
+                      if (id === "large_intestine")
+                        return React.createElement("path", {
+                          key: id,
+                          d: "M 230 440 Q 240 440 240 430 L 240 300 Q 240 280 220 280 L 160 280 Q 140 280 140 300 L 140 440",
+                          fill: "none",
+                          stroke: org.color,
+                          strokeWidth: 22,
+                          strokeLinecap: "round",
+                          className:
+                            "cursor-pointer hover:brightness-125 transition-all",
+                          onClick: () => {
+                            setSelectedId(id);
+                            setView("detail");
+                          },
+                        });
+                    })
+                  )
+                ),
+                React.createElement(
+                  "div",
+                  { className: "lg:col-span-5 flex flex-col gap-6" },
+                  React.createElement(
+                    "h2",
+                    { className: "text-3xl font-black text-white" },
+                    "ባዮ-ሲስተም ዳታ"
+                  ),
+                  React.createElement(
+                    "div",
+                    { className: "grid gap-3" },
+                    Object.entries(ORGANS).map(([id, org]) =>
+                      React.createElement(
+                        "button",
+                        {
+                          key: id,
+                          onClick: () => {
+                            setSelectedId(id);
+                            setView("detail");
+                          },
+                          className:
+                            "hologram-card p-4 rounded-xl flex items-center gap-4 border-l-4",
+                          style: { borderLeftColor: org.color },
+                        },
+                        React.createElement("span", null, org.icon),
+                        React.createElement(
+                          "div",
+                          { className: "text-left" },
+                          React.createElement(
+                            "div",
+                            { className: "font-bold text-white" },
+                            org.name
+                          ),
+                          React.createElement(
+                            "div",
+                            { className: "text-[10px] text-slate-500" },
+                            org.english
+                          )
+                        )
+                      )
+                    )
+                  ),
+                  React.createElement(
+                    "button",
+                    {
+                      onClick: () => setView("quiz"),
+                      className:
+                        "glow-button text-cyan-400 py-4 rounded-xl font-bold mt-4",
+                    },
+                    "ፈተናውን ጀምር"
+                  )
+                )
+              )
+            );
+          }
+          if (view === "detail") {
+            const org = ORGANS[selectedId];
+            return React.createElement(
+              "div",
+              { className: "min-h-screen p-6 max-w-4xl mx-auto" },
+              React.createElement(
+                "button",
+                {
+                  onClick: () => setView("home"),
+                  className: "mb-8 text-cyan-400 flex items-center gap-2",
+                },
+                React.createElement(ArrowLeft, { size: 18 }),
+                "ወደ ዝርዝር ተመለስ"
+              ),
+              React.createElement(
+                "div",
+                {
+                  className: "hologram-card rounded-[3rem] p-10 border-l-8",
+                  style: { borderLeftColor: org.color },
+                },
+                React.createElement(
+                  "div",
+                  { className: "text-8xl mb-6" },
+                  org.icon
+                ),
+                React.createElement(
+                  "h1",
+                  { className: "text-4xl font-black text-white mb-2" },
+                  org.name
+                ),
+                React.createElement(
+                  "p",
+                  {
+                    className:
+                      "text-cyan-400 uppercase tracking-widest text-xs mb-8",
+                  },
+                  org.english
+                ),
+                React.createElement(
+                  "p",
+                  { className: "text-xl text-slate-300 mb-10" },
+                  org.description
+                ),
+                React.createElement(
+                  "div",
+                  { className: "space-y-4" },
+                  org.facts.map((f, i) =>
+                    React.createElement(
+                      "div",
+                      { key: i, className: "flex gap-3 text-slate-400" },
+                      React.createElement(Zap, {
+                        className: "text-yellow-500 shrink-0",
+                        size: 16,
+                      }),
+                      f
+                    )
+                  )
+                )
+              )
+            );
+          }
+          if (view === "quiz") {
+            const q = BIO_QUIZ[quizIdx];
+            return React.createElement(
+              "div",
+              {
+                className: "min-h-screen p-6 flex items-center justify-center",
+              },
+              React.createElement(
+                "div",
+                {
+                  className:
+                    "max-w-xl w-full hologram-card rounded-[2.5rem] p-10",
+                },
+                React.createElement(
+                  "h2",
+                  {
+                    className:
+                      "text-2xl font-bold text-white mb-8 border-l-4 border-cyan-500 pl-4",
+                  },
+                  q.q
+                ),
+                React.createElement(
+                  "div",
+                  { className: "space-y-4" },
+                  q.options.map((opt, i) => {
+                    let s =
+                      "border-slate-800 text-slate-400 hover:border-cyan-500";
+                    if (ansStatus !== null) {
+                      if (i === q.correct)
+                        s = "border-green-500 bg-green-500/10 text-green-400";
+                      else if (i === ansStatus)
+                        s = "border-red-500 bg-red-500/10 text-red-400";
+                      else s = "opacity-20";
+                    }
+                    return React.createElement(
+                      "button",
+                      {
+                        key: i,
+                        disabled: ansStatus !== null,
+                        onClick: () => handleAnswer(i, BIO_QUIZ),
+                        className: `w-full p-5 rounded-2xl text-left font-bold border-2 transition-all ${s}`,
+                      },
+                      opt
+                    );
+                  })
+                )
+              )
+            );
+          }
+          if (view === "result") {
+            return React.createElement(
+              "div",
+              { className: "min-h-screen flex items-center justify-center" },
+              React.createElement(
+                "div",
+                {
+                  className:
+                    "hologram-card p-16 rounded-[4rem] text-center border-b-4 border-cyan-500",
+                },
+                React.createElement(
+                  "h2",
+                  { className: "text-4xl font-black mb-6" },
+                  "ተጠናቋል!"
+                ),
+                React.createElement(
+                  "div",
+                  { className: "text-6xl font-black text-white mb-8" },
+                  `${score} / ${BIO_QUIZ.length}`
+                ),
+                React.createElement(
+                  "button",
+                  {
+                    onClick: () => setView("home"),
+                    className: "glow-button px-10 py-4 rounded-xl font-bold",
+                  },
+                  "ወደ መጀመሪያው ተመለስ"
+                )
+              )
+            );
+          }
+        }
+
+        // 3. Temporal Linguistics (Tense) Module Views
+        if (module === "tense") {
+          if (view === "home") {
+            return React.createElement(
+              "div",
+              { className: "min-h-screen p-6 max-w-7xl mx-auto" },
+              React.createElement(
+                "button",
+                {
+                  onClick: () => setModule("hub"),
+                  className:
+                    "mb-8 text-magenta-400 flex items-center gap-2 font-bold hover:underline",
+                },
+                React.createElement(ArrowLeft, { size: 18 }),
+                "ወደ ዋናው ማውጫ ተመለስ"
+              ),
+              React.createElement(
+                "header",
+                { className: "mb-12 border-l-4 border-magenta-500 pl-6" },
+                React.createElement(
+                  "div",
+                  {
+                    className:
+                      "text-magenta-400 text-xs font-bold tracking-widest",
+                  },
+                  "MODULE: TEMPORAL LINGUISTICS v1.0"
+                ),
+                React.createElement(
+                  "h1",
+                  { className: "text-5xl font-black text-white" },
+                  "12ቱ የእንግሊዝኛ ጊዜያት"
+                ),
+                React.createElement(
+                  "p",
+                  { className: "text-slate-400 mt-2" },
+                  "የእንግሊዝኛን ሰዋሰው (Grammar) በጊዜያት እንመርምር።"
+                )
+              ),
+              React.createElement(
+                "div",
+                { className: "grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12" },
+                Object.entries(TENSES).map(([id, t]) =>
+                  React.createElement(
+                    "button",
+                    {
+                      key: id,
+                      onClick: () => {
+                        setSelectedId(id);
+                        setView("detail");
+                      },
+                      className:
+                        "hologram-card p-6 rounded-3xl border-magenta-500/20 text-left hover:border-magenta-500 transition-all group",
+                    },
+                    React.createElement(
+                      "div",
+                      {
+                        className:
+                          "text-magenta-400 font-black mb-1 group-hover:neon-text-magenta",
+                      },
+                      t.name
+                    ),
+                    React.createElement(
+                      "div",
+                      { className: "text-slate-500 text-xs mb-4" },
+                      t.amharic
+                    ),
+                    React.createElement(
+                      "div",
+                      {
+                        className:
+                          "bg-magenta-950/20 p-3 rounded-xl border border-magenta-900/30 text-xs text-magenta-300 font-mono",
+                      },
+                      t.formula
+                    )
+                  )
+                )
+              ),
+              React.createElement(
+                "div",
+                { className: "flex justify-center" },
+                React.createElement(
+                  "button",
+                  {
+                    onClick: () => setView("quiz"),
+                    className:
+                      "glow-button-magenta px-16 py-5 rounded-2xl font-bold text-white text-xl flex items-center gap-3",
+                  },
+                  React.createElement(CheckSquare, { size: 24 }),
+                  "ፈተናውን ጀምር"
+                )
+              )
+            );
+          }
+          if (view === "detail") {
+            const t = TENSES[selectedId];
+            return React.createElement(
+              "div",
+              {
+                className:
+                  "min-h-screen p-6 max-w-4xl mx-auto flex flex-col items-center justify-center",
+              },
+              React.createElement(
+                "button",
+                {
+                  onClick: () => setView("home"),
+                  className:
+                    "self-start mb-8 text-magenta-400 flex items-center gap-2 font-bold",
+                },
+                React.createElement(ArrowLeft, { size: 18 }),
+                "ወደ ዝርዝር ተመለስ"
+              ),
+              React.createElement(
+                "div",
+                {
+                  className:
+                    "hologram-card w-full rounded-[3.5rem] p-10 md:p-16 border-t-8 border-magenta-500",
+                },
+                React.createElement(
+                  "div",
+                  { className: "flex items-center gap-4 mb-8" },
+                  React.createElement(
+                    "div",
+                    {
+                      className:
+                        "w-16 h-16 bg-magenta-500/20 rounded-2xl flex items-center justify-center text-magenta-400",
+                    },
+                    React.createElement(Clock, { size: 32 })
+                  ),
+                  React.createElement(
+                    "div",
+                    null,
+                    React.createElement(
+                      "h1",
+                      { className: "text-4xl font-black text-white" },
+                      t.name
+                    ),
+                    React.createElement(
+                      "p",
+                      { className: "text-magenta-400 font-bold" },
+                      t.amharic
+                    )
+                  )
+                ),
+                React.createElement(
+                  "div",
+                  { className: "space-y-10" },
+                  React.createElement(
+                    "section",
+                    null,
+                    React.createElement(
+                      "h3",
+                      {
+                        className:
+                          "text-xs font-bold text-slate-500 uppercase tracking-widest mb-4",
+                      },
+                      "ቀመሩ (The Formula)"
+                    ),
+                    React.createElement(
+                      "div",
+                      {
+                        className:
+                          "bg-black/50 p-6 rounded-2xl border border-magenta-500/30 font-mono text-2xl text-magenta-400 neon-text-magenta text-center",
+                      },
+                      t.formula
+                    )
+                  ),
+                  React.createElement(
+                    "section",
+                    null,
+                    React.createElement(
+                      "h3",
+                      {
+                        className:
+                          "text-xs font-bold text-slate-500 uppercase tracking-widest mb-4",
+                      },
+                      "አጠቃቀም (Usage)"
+                    ),
+                    React.createElement(
+                      "p",
+                      { className: "text-xl text-slate-300 leading-relaxed" },
+                      t.usage
+                    )
+                  ),
+                  React.createElement(
+                    "section",
+                    {
+                      className:
+                        "bg-magenta-500/5 p-8 rounded-3xl border border-dashed border-magenta-500/20",
+                    },
+                    React.createElement(
+                      "h3",
+                      {
+                        className:
+                          "text-xs font-bold text-magenta-400 uppercase tracking-widest mb-4",
+                      },
+                      "ምሳሌ (Example)"
+                    ),
+                    React.createElement(
+                      "p",
+                      { className: "text-2xl text-white italic font-serif" },
+                      `"${t.example}"`
+                    )
+                  )
+                )
+              )
+            );
+          }
+          if (view === "quiz") {
+            const q = TENSE_QUIZ[quizIdx];
+            return React.createElement(
+              "div",
+              {
+                className: "min-h-screen p-6 flex items-center justify-center",
+              },
+              React.createElement(
+                "div",
+                {
+                  className:
+                    "max-w-xl w-full hologram-card rounded-[2.5rem] p-10 border-magenta-500/30",
+                },
+                React.createElement(
+                  "div",
+                  { className: "flex justify-between items-center mb-10" },
+                  React.createElement(
+                    "span",
+                    {
+                      className:
+                        "text-xs font-bold text-magenta-400 uppercase tracking-widest",
+                    },
+                    `ጥያቄ ${quizIdx + 1} / ${TENSE_QUIZ.length}`
+                  ),
+                  React.createElement(
+                    "span",
+                    { className: "text-white font-black" },
+                    `ውጤት: ${score}`
+                  )
+                ),
+                React.createElement(
+                  "h2",
+                  {
+                    className:
+                      "text-2xl font-bold text-white mb-10 leading-relaxed border-l-4 border-magenta-500 pl-4",
+                  },
+                  q.q
+                ),
+                React.createElement(
+                  "div",
+                  { className: "grid gap-4" },
+                  q.options.map((opt, i) => {
+                    let s =
+                      "border-slate-800 text-slate-400 hover:border-magenta-500";
+                    if (ansStatus !== null) {
+                      if (i === q.correct)
+                        s =
+                          "border-green-500 bg-green-500/10 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.2)]";
+                      else if (i === ansStatus)
+                        s = "border-red-500 bg-red-500/10 text-red-400";
+                      else s = "opacity-20";
+                    }
+                    return React.createElement(
+                      "button",
+                      {
+                        key: i,
+                        disabled: ansStatus !== null,
+                        onClick: () => handleAnswer(i, TENSE_QUIZ),
+                        className: `w-full p-5 rounded-2xl text-left font-bold border-2 transition-all ${s}`,
+                      },
+                      opt
+                    );
+                  })
+                )
+              )
+            );
+          }
+          if (view === "result") {
+            return React.createElement(
+              "div",
+              { className: "min-h-screen flex items-center justify-center" },
+              React.createElement(
+                "div",
+                {
+                  className:
+                    "hologram-card p-16 rounded-[4rem] text-center border-b-4 border-magenta-500",
+                },
+                React.createElement(
+                  "div",
+                  { className: "text-9xl mb-8 animate-bounce" },
+                  score === TENSE_QUIZ.length ? "🎯" : "💪"
+                ),
+                React.createElement(
+                  "h2",
+                  { className: "text-4xl font-black text-white mb-6" },
+                  "ተጠናቋል!"
+                ),
+                React.createElement(
+                  "div",
+                  {
+                    className:
+                      "text-6xl font-black text-magenta-400 mb-10 neon-text-magenta",
+                  },
+                  `${score} / ${TENSE_QUIZ.length}`
+                ),
+                React.createElement(
+                  "button",
+                  {
+                    onClick: () => setView("home"),
+                    className:
+                      "glow-button-magenta px-10 py-4 rounded-xl font-bold text-white",
+                  },
+                  "ወደ መጀመሪያው ተመለስ"
+                )
+              )
+            );
+          }
+        }
+
+        return null;
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(React.createElement(LearningApp));
+    </script>
+  </body>
+</html>
